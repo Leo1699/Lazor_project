@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="2939c3cf-c282-406d-b1a0-acd7d1f1dc3a" name="Changes" comment="test1">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Lazor_Project.py" beforeDir="false" afterPath="$PROJECT_DIR$/Lazor_Project.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Untitled11.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Untitled11.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -45,20 +44,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.Lazor_Project.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "configurable.group.appearance",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.Lazor_Project.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Merging master&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;configurable.group.appearance&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -75,7 +74,9 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1730486187668</updated>
-      <workItem from="1730491466777" duration="19461000" />
+      <workItem from="1730491466777" duration="20545000" />
+      <workItem from="1730660310652" duration="215000" />
+      <workItem from="1730660536941" duration="478000" />
     </task>
     <task id="LOCAL-00001" summary="test1">
       <option name="closed" value="true" />
@@ -93,7 +94,15 @@
       <option name="project" value="LOCAL" />
       <updated>1730491807356</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="test1">
+      <option name="closed" value="true" />
+      <created>1730659223788</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1730659223788</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
