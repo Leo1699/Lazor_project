@@ -176,112 +176,137 @@ def get_colors():
     }
 
 
-def save_answer_board(solved_board, answer_lazor, lazors_info, holes, filename, blockSize=100):
+def save_solution_bff(solved_board, answer_lazor, lazors_info, holes, filename):
     '''
-    The idea of the code comes from the maze lab of the software carpentry class.
-    This function is to save the solved board as "filename_solved.png"
+    This function saves the solution as a .bff file with clear laser path branching.
 
     **Parameters**
 
         solved_board: *list*
-            The solved grid
+            The solved grid with the block placements
+
         answer_lazor: *list*
-            The coordinations that lasers passed by
+            The paths that lasers passed
+
         lazors_info: *list*
-            The original positions and directions of the lazors
+            The original positions and directions of the lasers
+
         holes: *list*
-            The position of the hole points
+            The positions of the hole points
+
         filename: *str*
-            The name of the file
-        blocksize: *int*
-            The size of the blocks of the board
+            The name of the original .bff file
 
-    ** Returns **
+    **Return**
 
-        The image of the correct answer
+        None
     '''
+    solution_filename = f"{filename.split('.')[0]}_solved.bff"
 
-    nBlocksx = len(solved_board[0])
-    nBlocksy = len(solved_board)
-    dimx = nBlocksx * blockSize
-    dimy = nBlocksy * blockSize
-    colors = get_colors()
+    with open(solution_filename, 'w') as f:
+        # Write grid solution
+        f.write("GRID START\n")
+        for row in solved_board:
+            line = ' '.join(row)  # Convert list to a string with space-separated values
+            f.write(line + '\n')
+        f.write("GRID STOP\n\n")
 
-    # Verify that all values in the board are valid colors
-    ERR_MSG = "Error, invalid board value found!"
-    assert all([x in colors.keys()
-                for row in solved_board for x in row]), ERR_MSG
+        # Write laser information
+        f.write("L LASER_START\n")
+        for lazor in lazors_info:
+            f.write(f"L {lazor[0]} {lazor[1]} {lazor[2]} {lazor[3]}\n")
+        f.write("L LASER_END\n\n")
 
-    img = Image.new("RGB", (dimx, dimy), color=0)
+        # Write hole information
+        f.write("P HOLES_START\n")
+        for hole in holes:
+            f.write(f"P {hole[0]} {hole[1]}\n")
+        f.write("P HOLES_END\n\n")
 
-    # Parse "board" into pixels
-    for jy in range(nBlocksy):
-        for jx in range(nBlocksx):
-            x = jx * blockSize
-            y = jy * blockSize
+        # Write laser path solution with branching details
+        f.write("LASER PATH\n")
+        for path in answer_lazor:
+            main_path_points = set()  # Track points on the main path
+            f.write("Main Path:\n  ")
 
-            for i in range(blockSize):
-                for j in range(blockSize):
-                    img.putpixel((x + i, y + j),
-                                 colors[solved_board[jy][jx]])
+            split_detected = False  # Track whether a split was detected
 
-    for i in range(nBlocksy - 1):
-        y = (i + 1) * blockSize
-        shape = [(0, y), (dimx, y)]
-        img_new = ImageDraw.Draw(img)
-        img_new.line(shape, fill=0 in colors.keys(), width=5)
+            for i, point in enumerate(path):
+                point_tuple = tuple(point[:2])  # Convert list to tuple for hashability, using only coordinates
 
-    for i in range(nBlocksx - 1):
-        x = (i + 1) * blockSize
-        shape = [(x, 0), (x, dimy)]
-        img_new = ImageDraw.Draw(img)
-        img_new.line(shape, fill=0 in colors.keys(), width=5)
+                if point_tuple in main_path_points and i > 0 and not split_detected:
+                    # Detect split point and branch
+                    f.write(f"\n  Split at {point[:2]}:\n")
+                    split_detected = True
 
-    for i in range(len(lazors_info)):
-        lazor_info = lazors_info[i]
-        lazor_pos = (lazor_info[0], lazor_info[1])
-        img_new = ImageDraw.Draw(img)
-        img_new.ellipse([lazor_pos[0] * blockSize / 2 - 10, lazor_pos[1] * blockSize / 2 - 10,
-                         lazor_pos[0] * blockSize / 2 + 10, lazor_pos[1] * blockSize / 2 + 10], fill=(255, 0, 0))
+                    # Write the reflection path
+                    f.write("    Reflection Path: ")
+                    for j in range(i, len(path)):
+                        if j < len(path) - 1:
+                            f.write(f"({path[j][0]}, {path[j][1]}) -> ")
+                        else:
+                            f.write(f"({path[j][0]}, {path[j][1]})\n")
 
-    for i in answer_lazor:
-        for point in range(len(i)):
-            co_start = (i[point][0] * blockSize / 2,
-                        i[point][1] * blockSize / 2)
-            if point + 1 < len(i):
-                co_end = (i[point + 1][0] * blockSize / 2,
-                          i[point + 1][1] * blockSize / 2)
-            else:
-                co_end = co_start
-            img_new = ImageDraw.Draw(img)
-            img_new.line([co_start, co_end], fill=(255, 0, 0), width=5)
+                    # Write the transmission path
+                    f.write("    Transmission Path: ")
+                    continue  # Skip to transmission path section
+                elif split_detected:
+                    # Continue with transmission path after split
+                    if i < len(path) - 1:
+                        f.write(f"({point[0]}, {point[1]}) -> ")
+                    else:
+                        f.write(f"({point[0]}, {point[1]})\n")
+                else:
+                    # Continue main path
+                    if i < len(path) - 1:
+                        f.write(f"({point[0]}, {point[1]}) -> ")
+                    else:
+                        f.write(f"({point[0]}, {point[1]})\n")
+                    main_path_points.add(point_tuple)
+            f.write("\n")
+        f.write("LASER PATH END\n")
 
-    for i in range(len(holes)):
-        img_new.ellipse([holes[i][0] * blockSize / 2 - 10, holes[i][1] * blockSize / 2 - 10,
-                         holes[i][0] * blockSize / 2 + 10, holes[i][1] * blockSize / 2 + 10], fill=(255, 255, 255), outline="red", width=2)
-
-    # Name the result image
-    if not filename.endswith(".png"):
-        filename_new = '.'.join(filename.split(".")[0:-1])
-        filename_new += "_solved.png"
-
-    img.save("%s" % filename_new)
+    print(f'Solution successfully saved in {solution_filename}')
 
 
 class Grid(object):
+    '''
+    This Function class is a wrapper for generating various grids
+
+    **Parameters**
+
+        grid : *list*
+            A list of list stand for a possible grid of the solution
+    '''
+
     def __init__(self, origrid):
         self.origrid = origrid
         self.length = len(origrid)
         self.width = len(origrid[0])
 
     def gen_grid(self, listgrid, position):
-        # (Modified to limit certain configurations early on)
-        # This function now only considers grids with certain checks, avoiding unnecessary permutations.
-        filtered_grid = [listgrid[i] if (i, j) not in position else 'x'
-                         for i in range(len(self.origrid))
-                         for j in range(len(self.origrid[0]))]
-        return filtered_grid
+        '''
+        This function aim to put 'A', 'B' or 'C' block into the grid
 
+        **Parameters**
+
+            listgrid: *list*
+                The grid that have the same length and width with the original grid
+            position: *list*
+                One possible arrangement for putting the blocks
+
+        **Return**
+
+            self.origrid: *list*
+                The grid with blocks filled in
+        '''
+        self.listgrid = listgrid
+        for row in range(len(self.origrid)):
+            for column in range(len(self.origrid[0])):
+                if [row, column] not in position:
+                    if self.origrid[row][column] != 'x':
+                        self.origrid[row][column] = listgrid.pop(0)
+        return self.origrid
 
 
 class Lazor(object):
@@ -624,7 +649,7 @@ def find_fixed_block(smallgrid):
 def solver(fptr):
     '''
     This function provides all the necessary parameters of the correct grid
-    and generates a picture of the result
+    and generates a .bff file of the result
 
     **Parameters**
 
@@ -634,15 +659,13 @@ def solver(fptr):
     **Return**
 
         good_grid: *list*
-            A list represents for a correct grid
+            A list representing the correct grid
         answer: *list*
-            A list contains all the information of lasor path
+            A list containing all laser paths
         lazor: *list*
             The correct grid but every element in one list
     '''
-
-    # We read the .bff file and obatin the grid that we filled with 'x' for coordination,
-    # the number of a,b,c, the original lasor list, the hole list and the original grid
+    # Read the .bff file and extract the grid, block numbers, lasers, holes, etc.
     read = read_bff(fptr)
     grid = read[0]
     a = read[1]
@@ -651,24 +674,26 @@ def solver(fptr):
     lazorlist = read[4]
     holelist = read[5]
     smallgrid = read[6]
-    # We find out the coordination of blocks that are fixed
+
+    # Find the positions of fixed blocks
     position = find_fixed_block(smallgrid)
-    # We find out the lasor pathway and permutation of the correct grid
+
+    # Find the solution grid, laser paths, and correct configuration
     answer, lazor = find_path(grid, a, b, c, lazorlist, holelist, position)[:2]
-    # We generate the orignial board filled with the correct lazor path
+
+    # Generate the original board with the correct laser path
     good_list = copy.deepcopy(lazor)
     good_grid = copy.deepcopy(smallgrid)
     for row in range(len(good_grid)):
         for column in range(len(good_grid[0])):
             if good_grid[row][column] == 'o':
                 good_grid[row][column] = good_list.pop(0)
-    # We save and generate a picture for the solve
-    save_answer_board(solved_board=good_grid, answer_lazor=answer, lazors_info=lazorlist,
-                      holes=holelist, filename=fptr)
-    answer_pic_name = '.'.join(fptr.split('.')[0:-1])
-    print('Success! The answer is saved as {}'. format(
-        answer_pic_name + '_solved.png'))
-    return(good_grid, answer, lazor)
+
+    # Save the solution as a .bff file instead of an image
+    save_solution_bff(solved_board=good_grid, answer_lazor=answer,
+                      lazors_info=lazorlist, holes=holelist, filename=fptr)
+
+    return good_grid, answer, lazor
 
 
 if __name__ == "__main__":

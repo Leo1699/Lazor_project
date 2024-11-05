@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="2939c3cf-c282-406d-b1a0-acd7d1f1dc3a" name="Changes" comment="test1">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Untitled11.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Untitled11.ipynb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Lazor_Project.py" beforeDir="false" afterPath="$PROJECT_DIR$/Lazor_Project.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,7 +48,7 @@
   &quot;keyToString&quot;: {
     &quot;Python.Lazor_Project.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Merging master&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -76,7 +76,8 @@
       <updated>1730486187668</updated>
       <workItem from="1730491466777" duration="20545000" />
       <workItem from="1730660310652" duration="215000" />
-      <workItem from="1730660536941" duration="478000" />
+      <workItem from="1730660536941" duration="2525000" />
+      <workItem from="1730831532512" duration="5512000" />
     </task>
     <task id="LOCAL-00001" summary="test1">
       <option name="closed" value="true" />
@@ -102,7 +103,15 @@
       <option name="project" value="LOCAL" />
       <updated>1730659223788</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="test1">
+      <option name="closed" value="true" />
+      <created>1730661187318</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1730661187318</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -124,6 +133,6 @@
     <option name="LAST_COMMIT_MESSAGE" value="test1" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Lazor_proejct$Lazor_Project.coverage" NAME="Lazor_Project Coverage Results" MODIFIED="1730582089313" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Lazor_proejct$Lazor_Project.coverage" NAME="Lazor_Project Coverage Results" MODIFIED="1730841397854" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
