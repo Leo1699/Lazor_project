@@ -9,33 +9,36 @@ Congqi Lin: clin145@jh.edu
 
 ## How It Works
 
-### Key Classes and Functions
+### Key Classes
 
-- **A_Block, B_Block, C_Block**: Classes defining the interaction behavior of different types of blocks:
-  - **A_Block**: Reflects the laser upon contact.
-  - **B_Block**: Absorbs the laser, ending its path.
-  - **C_Block**: Splits the laser into two separate paths.
+- **A_Block, B_Block, C_Block**: These classes define the interaction behavior for each block type:
+  - **A_Block**: Reflects the laser upon contact, changing its direction.
+  - **B_Block**: Absorbs the laser, ending its path at that block.
+  - **C_Block**: Splits the laser into two separate paths, creating a fork in the path.
 
-- **read_bff**: Reads and parses the `.bff` file to obtain the initial game configuration, including:
-  - Block counts (A, B, and C types)
-  - Laser start positions and directions
-  - Target points for lasers
-  - Initial grid layout
+- **Grid**: Manages the grid structure and allows for block placement. The Grid class handles:
+  - **locate_static_blocks**: Identifies fixed blocks on the board to prevent overwriting them during grid updates.
+  - **gen_grid**: Places blocks on the grid based on specific configurations.
 
-- **Grid**: Manages the grid structure and allows for block placement. It handles:
-  - Generating the grid with added blocks
-  - Locating static blocks that should not be overwritten
+- **Lazor**: Manages laser movements and interactions with blocks on the grid, including:
+  - **block**: Determines the block type at a position and updates the laser's path accordingly.
+  - **meet_block**: Checks for block encounters and calculates the new laser direction.
+  - **check**: Verifies if the laser path is still within grid boundaries.
+  - **lazor_path**: Tracks each laser's path, ensuring that it reaches all target points.
 
-- **Lazor**: Manages the lasers and their interactions with blocks in the grid, including:
-  - Tracking the laser paths through the grid
-  - Checking for boundaries and target holes
-  - Updating laser directions based on block interactions
+### Key Functions
 
-- **find_path**: Generates possible grid configurations with different block placements, then tests each configuration to find a solution that hits all target points.
+- **read_bff**: Reads and parses the `.bff` file to extract initial game configuration, such as block counts, laser positions, target points, and grid layout.
 
-- **save_solution_bff**: Saves the solution (final grid layout and laser paths) back into a `.bff` file.
+- **save_solution_bff**: Saves the solved grid layout, including laser paths, to a `.bff` file. This function generates the solution output format, including:
+  - Final grid layout with placed blocks
+  - Laser start points
+  - Target points
+  - Laser path steps
 
-- **solve_lazor_game**: The main function that combines all the steps, from reading the `.bff` file, finding the solution, to saving the solution.
+- **find_path**: Generates potential block configurations and tests each to find a solution that meets the target requirements. It returns the solution if one is found.
+
+- **solve_lazor_game**: The main function that orchestrates the entire process, combining the above classes and functions to read input, compute solutions, and save the output.
 
 ### Workflow
 
@@ -44,6 +47,7 @@ Congqi Lin: clin145@jh.edu
 3. **Simulate Laser Paths**: The laser paths are calculated based on the blocks' interactions.
 4. **Find Solution**: Multiple grid configurations are tested to find one where all target points are hit by the lasers.
 5. **Save Solution**: The solved grid layout and laser paths are saved to a `.bff` file.
+
 ## Example Usage:  
 The Input .bff docs like (showstopper_4.bff)  
 ```plaintext
