@@ -236,7 +236,19 @@ class Grid:
         self.origrid = origrid
         self.length = len(origrid)
         self.width = len(origrid[0])
+        self.static_positions = self.locate_static_blocks()
+    def locate_static_blocks(self):
+        '''
+        This function identifies static blocks in the initial board layout
+        to prevent overwriting them when generating new grids.
 
+        **Return**
+
+            static_positions: *list*
+                A list of coordinates for blocks fixed by the game.
+        '''
+        static_positions = [[i * 2 + 1, j * 2 + 1] for i, row in enumerate(self.origrid) for j, block in enumerate(row) if block in "ABC"]
+        return static_positions
     def gen_grid(self, listgrid, position):
         '''
         Inserts blocks into the grid according to the specified positions.
@@ -261,6 +273,7 @@ class Grid:
                     if self.origrid[row][column] != 'x':
                         self.origrid[row][column] = listgrid.pop(0)
         return self.origrid
+
 
 
 class Lazor:
