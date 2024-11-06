@@ -4,267 +4,211 @@ import time
 
 class A_Block:
     '''
-    This class defines the behavior of an A-type block,
-    which reflects the laser in a new direction upon interaction.
+    A-type block that reflects the laser upon interaction.
 
     **Methods**
 
         interact(direction, point):
-            Returns the reflected direction of the laser based on the
-            position of the block and the incoming laser direction.
+            Reflects the laser based on position and direction.
 
     **Parameters**
 
         direction: *list*
-            A list representing the laser's current direction.
+            The laser's current direction as [dx, dy].
         point: *list*
-            The current position of the laser.
+            Current position of the laser as [x, y].
 
     **Returns**
 
         list:
-            A new direction after reflection based on the block's position.
+            Reflected laser direction as [dx, dy].
     '''
     @staticmethod
     def interact(direction, point):
-        # Reflect based on direction and position
+        # Reflects based on position: horizontal or vertical flip
         return [-direction[0], direction[1]] if point[0] % 2 == 0 else [direction[0], -direction[1]]
 
 
 class B_Block:
     '''
-    This class defines the behavior of a B-type block,
-    which absorbs the laser, effectively ending its path.
+    B-type block that absorbs the laser, ending its path.
 
     **Methods**
 
         interact(direction, point):
-            Returns an empty list to indicate the laser is absorbed.
+            Absorbs the laser.
 
     **Parameters**
 
         direction: *list*
-            A list representing the laser's current direction.
+            The laser's current direction as [dx, dy].
         point: *list*
-            The current position of the laser.
+            Current position of the laser as [x, y].
 
     **Returns**
 
         list:
-            An empty list to indicate the laser is absorbed.
+            Empty list indicating the laser is absorbed.
     '''
     @staticmethod
     def interact(direction, point):
-        # Absorb the laser
+        # Laser absorbed, no further direction
         return []
 
 
 class C_Block:
     '''
-    This class defines the behavior of a C-type block,
-    which splits the laser into two paths upon interaction.
+    C-type block that splits the laser into two paths.
 
     **Methods**
 
         interact(direction, point):
-            Returns two new directions for the laser, effectively
-            splitting it based on the block's position and incoming direction.
+            Splits the laser based on position and direction.
 
     **Parameters**
 
         direction: *list*
-            A list representing the laser's current direction.
+            Laser's current direction as [dx, dy].
         point: *list*
-            The current position of the laser.
+            Current position of the laser as [x, y].
 
     **Returns**
 
         list:
-            A list containing two sets of directions, representing
-            the split paths of the laser.
+            Two new directions after splitting, as [dx1, dy1, dx2, dy2].
     '''
     @staticmethod
     def interact(direction, point):
-        # Split the laser into two directions
+        # Split laser: generates two paths based on position
         if point[0] % 2 == 0:
             return [direction[0], direction[1], -direction[0], direction[1]]
         else:
             return [direction[0], direction[1], direction[0], -direction[1]]
 
 
-
 def read_bff(file_name):
     '''
-    Extract imformation from '.bff' file
+    Reads a .bff file and parses block counts, laser setup, target points, and grid layout.
 
     **Parameters**
 
         file_name: *str*
-            The full name of the file which has information to be extracted
+            Filename of the .bff file.
 
-    **Return**
+    **Returns**
 
-        tuple: *list, int, int, int, list, list，list*
-            Elements in the tuple are as follow:
-                grid_full: *list*
-                    The full grid in the form of a coordinate system
-                A_num: *int*
-                    The number of A-block available
-                B_num: *int*
-                    The number of B-block available
-                C_num: *int*
-                    The number of C-block available
-                L_list: *list*
-                    The first two elements is the positon of the start point of the
-                    lazor, the last two elements are the direction of the lazor
-                P_list: *list*
-                    The positions of the end points
-                grid_origin: *list*
-                    The grid directly obtained from the '.bff' file
+        tuple:
+            Parsed data including grid layout, block counts, laser info, targets, and original grid.
     '''
-    # Initialize the parameters
-    content = []  # Store the content
-    grid = []
-    grid_origin = []
-    grid_temp = []
-    A_num = 0  # Initialize A, B, C, L, P
-    B_num = 0
-    C_num = 0
+    # Initialize counts and lists for blocks, lasers, targets, and grid structure
+    A_num = B_num = C_num = 0
     L_list = []
     P_list = []
-    # Open and read the file
+    grid_temp = []
+    reading_grid = False
+
+    # Open and process each line in the file
     with open(file_name, 'r') as f:
-        # Get all the lines in the file
-        lines = list(f)
-        for i in range(len(lines)):
-            lines[i] = lines[i].strip()
-            content.append(list(lines[i]))
-    # Extract useful information
-    for i in range(len(content)):
-        for j in range(len(content[i])):
-            # Set up some temporary lists
-            A_temp = []
-            B_temp = []
-            C_temp = []
-            # L_temp = []
-            # P_temp = []
-            # Get the number of available A-block
-            if content[i][j] == 'A' and (str.isalpha(content[i][j + 1]) is False):
-                for k in range(len(content[i])):
-                    if str.isdigit(content[i][k]):
-                        A_temp.append(content[i][k])
-                        A_num = int(''.join(A_temp))
-            # Get the number of available B-block
-            if content[i][j] == 'B' and (str.isalpha(content[i][j + 1]) is False):
-                for k in range(len(content[i])):
-                    if str.isdigit(content[i][k]):
-                        B_temp.append(content[i][k])
-                        B_num = int(''.join(B_temp))
-            # Get the number of available C-block
-            if content[i][j] == 'C' and (str.isalpha(content[i][j + 1]) is False):
-                for k in range(len(content[i])):
-                    if str.isdigit(content[i][k]):
-                        C_temp.append(content[i][k])
-                        C_num = int(''.join(C_temp))
-            # Get the positions of the start point and direction of lasors
-            if content[i][j] == 'L' and (str.isalpha(content[i][j + 1]) is False):
-                L_temp = lines[i].strip().split(' ')
-                L_temp.remove('L')
-                L_list.append([int(L_temp[0]), int(L_temp[1]),
-                               int(L_temp[2]), int(L_temp[3])])
-            # Get the positions of the end points
-            if content[i][j] == 'P' and (str.isalpha(content[i][j - 1]) is False):
-                P_temp = lines[i].strip().split(' ')
-                P_temp.remove('P')
-                P_list.append([int(P_temp[0]), int(P_temp[1])])
+        for line in f:
+            line = line.strip()
 
-        # Get the raw grid from the file
-        if lines[i] == 'GRID START':
-            grid_start = i + 1
-            while lines[grid_start] != 'GRID STOP':
-                grid_temp.append(content[grid_start])
-                grid_start += 1
+            # Ignore comments and blank lines
+            if line.startswith('#') or not line:
+                continue
 
-    # Remove the spaces of the raw grid
-    for i in range(len(grid_temp)):
-        gridline = [x for x in grid_temp[i] if x != ' ']
-        grid.append(gridline)
-    # Get the original grid which will be used to draw a picture
-    for i in range(len(grid_temp)):
-        gridline = [x for x in grid_temp[i] if x != ' ']
-        grid_origin.append(gridline)
-    # Fulfill the grid with 'x' to get the full grid
-    gridfull = grid.copy()
-    row = len(gridfull)
-    column = len(gridfull[0])
+            # Count blocks A, B, C based on file format
+            if line.startswith('A ') and line[2:].isdigit():
+                A_num = int(line.split()[1])
+            elif line.startswith('B ') and line[2:].isdigit():
+                B_num = int(line.split()[1])
+            elif line.startswith('C ') and line[2:].isdigit():
+                C_num = int(line.split()[1])
+
+            # Collect laser start points and directions
+            elif line.startswith('L '):
+                parts = line.split()
+                L_list.append([int(parts[1]), int(parts[2]), int(parts[3]), int(parts[4])])
+
+            # Collect target points for lasers
+            elif line.startswith('P '):
+                parts = line.split()
+                P_list.append([int(parts[1]), int(parts[2])])
+
+            # Identify grid content between 'GRID START' and 'GRID STOP'
+            elif line == 'GRID START':
+                reading_grid = True
+            elif line == 'GRID STOP':
+                reading_grid = False
+            elif reading_grid:
+                grid_temp.append(line.split())
+
+    # Expand grid layout for border calculations
+    grid_full = [[x for x in row] for row in grid_temp]
+    grid_origin = [row.copy() for row in grid_full]
+    row = len(grid_full)
+    column = len(grid_full[0])
     insert = ['x'] * (2 * column + 1)
-    for i in range(0, row):
-        for j in range(0, column + 1):
-            gridfull[i].insert(2 * j, 'x')
-    for i in range(0, row + 1):
-        gridfull.insert(2 * i, insert)
 
+    # Insert 'x' borders to create a complete grid structure with boundary
+    for i in range(row):
+        for j in range(column + 1):
+            grid_full[i].insert(2 * j, 'x')
+    for i in range(row + 1):
+        grid_full.insert(2 * i, insert)
 
-    return gridfull, A_num, B_num, C_num, L_list, P_list, grid_origin
+    return grid_full, A_num, B_num, C_num, L_list, P_list, grid_origin
 
 
 def save_solution_bff(solved_board, answer_lazor, lazors_info, holes, filename):
     '''
-    This function saves the solution as a .bff file with all paths output correctly.
+    Saves the solution to a .bff file with all laser paths.
 
     **Parameters**
 
         solved_board: *list*
-            The solved grid with the block placements
-
+            Solved grid layout with block placements.
         answer_lazor: *list*
-            The paths that lasers passed
-
+            Paths of the lasers as lists of coordinates.
         lazors_info: *list*
-            The original positions and directions of the lasers
-
+            Original positions and directions of lasers as [x, y, dx, dy].
         holes: *list*
-            The positions of the hole points
-
+            Target points for the lasers as lists of [x, y].
         filename: *str*
-            The name of the original .bff file
-
-    **Return**
-
-        None
+            Original .bff file name.
     '''
+    # Define solution file name based on original
     solution_filename = f"{filename.split('.')[0]}_solved.bff"
 
+    # Open the new file to write the solution details
     with open(solution_filename, 'w') as f:
-        # Write grid solution
+        # Write grid configuration
         f.write("GRID START\n")
         for row in solved_board:
-            line = ' '.join(row)  # Convert list to a string with space-separated values
+            line = ' '.join(row)
             f.write(line + '\n')
         f.write("GRID STOP\n\n")
 
-        # Write laser information
+        # Write laser setup details
         f.write("L LASER_START\n")
         for lazor in lazors_info:
             f.write(f"L {lazor[0]} {lazor[1]} {lazor[2]} {lazor[3]}\n")
         f.write("L LASER_END\n\n")
 
-        # Write hole information
+        # Write hole (target) locations
         f.write("P HOLES_START\n")
         for hole in holes:
             f.write(f"P {hole[0]} {hole[1]}\n")
         f.write("P HOLES_END\n\n")
 
-        # Write each laser path
+        # Write unique laser paths
         f.write("LASER PATH\n")
         for path in answer_lazor:
-            # Avoid writing paths with repeated coordinates
             unique_path = []
             for point in path:
                 if not unique_path or unique_path[-1] != point[:2]:
                     unique_path.append(point[:2])
 
-            # Format the path output as requested
+            # Write the path in specified format
             f.write("Path:\n  ")
             for i, point in enumerate(unique_path):
                 if i < len(unique_path) - 1:
@@ -277,70 +221,85 @@ def save_solution_bff(solved_board, answer_lazor, lazors_info, holes, filename):
     print(f'Solution successfully saved in {solution_filename}')
 
 
-
-class Grid(object):
+class Grid:
     '''
-    This Function class is a wrapper for generating various grids
+    Class to generate and manage grid configurations.
 
     **Parameters**
 
-        grid : *list*
-            A list of list stand for a possible grid of the solution
+        origrid: *list*
+            The original grid layout without added blocks.
     '''
 
     def __init__(self, origrid):
+        # Initialize grid and dimensions
         self.origrid = origrid
         self.length = len(origrid)
         self.width = len(origrid[0])
 
     def gen_grid(self, listgrid, position):
         '''
-        This function aim to put 'A', 'B' or 'C' block into the grid
+        Inserts blocks into the grid according to the specified positions.
 
         **Parameters**
 
             listgrid: *list*
-                The grid that have the same length and width with the original grid
+                List of block types to insert (e.g., 'A', 'B', 'C').
             position: *list*
-                One possible arrangement for putting the blocks
+                Coordinates of empty cells where blocks can be placed.
 
-        **Return**
+        **Returns**
 
-            self.origrid: *list*
-                The grid with blocks filled in
+            list:
+                Updated grid with blocks inserted.
         '''
         self.listgrid = listgrid
         for row in range(len(self.origrid)):
             for column in range(len(self.origrid[0])):
+                # Place blocks in empty spots except for fixed/static positions
                 if [row, column] not in position:
                     if self.origrid[row][column] != 'x':
                         self.origrid[row][column] = listgrid.pop(0)
         return self.origrid
 
 
-class Lazor(object):
+class Lazor:
     '''
-    This Function class is a wrapper for identifying right grid and return a laser path
+    Class for managing laser paths through the grid and tracking laser interactions.
 
     **Parameters**
 
-        grid : *list*
-            A list of list stand for a possible grid of the solution
-        lazorlist : *list*
-            A list of list stand for start point and direction of laser
-        holelist : *list*
-            A list of list stand for the position of the end point or the hole
+        grid: *list*
+            Grid layout containing block placements.
+        lazorlist: *list*
+            Laser start points and directions as lists of [x, y, dx, dy].
+        holelist: *list*
+            Target hole positions as lists of [x, y].
     '''
 
     def __init__(self, grid, lazorlist, holelist):
+        # Initialize the grid, lasers, and targets
         self.grid = grid
         self.lazorlist = lazorlist
         self.holelist = holelist
 
     def block(self, block_type, direction, point):
         '''
-        This function identifies the function of different blocks
-        and interacts with the laser based on block type.
+        Determines the block type and handles laser interaction.
+
+        **Parameters**
+
+            block_type: *str*
+                Type of block ('A', 'B', or 'C').
+            direction: *list*
+                Current laser direction as [dx, dy].
+            point: *list*
+                Current laser position as [x, y].
+
+        **Returns**
+
+            list:
+                Updated direction(s) after interaction.
         '''
         block_classes = {
             'A': A_Block,
@@ -352,112 +311,91 @@ class Lazor(object):
             return block_class.interact(direction, point)
         return direction
 
-
     def meet_block(self, point, direction):
         '''
-        This function checks whether the laser encounters a functional block
-        and returns the new direction of the laser.
+        Checks for a block encounter and updates laser direction accordingly.
 
         **Parameters**
 
             point: *list*
-                The current laser position
+                Current laser position [x, y].
             direction: *list*
-                The current direction of laser
+                Current direction of laser [dx, dy].
 
-        **Return**
+        **Returns**
 
-            new_direction: *list*
-                A list that includes new directions of laser after meeting functional block
+            list:
+                New direction of the laser after encountering a block.
         '''
-        # Calculate the next position of the laser
+        # Calculate possible next positions
         x1, y1 = point[0], point[1] + direction[1]
         x2, y2 = point[0] + direction[0], point[1]
 
-        # Obtain the block type the laser touches
-        if point[0] & 1 == 1:
-            block_type = self.grid[y1][x1]
-        else:
-            block_type = self.grid[y2][x2]
-
-        # Call the block method to handle interaction with the block
+        # Determine block type based on laser position
+        block_type = self.grid[y1][x1] if point[0] & 1 == 1 else self.grid[y2][x2]
         return self.block(block_type, direction, point)
-
-
 
     def check(self, laz_co, direction):
         '''
-        This function is used to check if the laser and its next step
-        is inside the grid, if not, return to the last step.
-
-        **Parameters:**
-
-            laz_co:*list*
-                The current coordination of the lazor point
-            direction:*list*
-                The direction of the newest lazor
-
-        **Returns**
-            *bool*
-                True if the lazor is still in the grid
-        '''
-        width = len(self.grid[0])
-        length = len(self.grid)
-        x = laz_co[0]
-        y = laz_co[1]
-        # Determine whether the position is in the grid
-        if x < 0 or x > (width - 1) or y < 0 or y > (length - 1) or \
-            (x + direction[0]) < 0 or \
-            (x + direction[0]) > (width - 1) or \
-            (y + direction[1]) < 0 or \
-                (y + direction[1]) > (length - 1):
-            return True
-        else:
-            return False
-
-
-    def lazor_path(self):
-        '''
-        This function calculates and returns the paths of all lasers.
+        Verifies if the laser is still within grid boundaries.
 
         **Parameters**
 
-            None
+            laz_co: *list*
+                Current laser coordinates as [x, y].
+            direction: *list*
+                Current laser direction as [dx, dy].
 
-        **Return**
+        **Returns**
 
-            laser_paths: *list*
-                A list containing the paths of all lasers.
+            bool:
+                True if within bounds, False if out of bounds.
         '''
+        width = len(self.grid[0])
+        length = len(self.grid)
+        x, y = laz_co[0], laz_co[1]
+
+        # Check if next position is within the grid
+        return x < 0 or x >= width or y < 0 or y >= length or \
+            x + direction[0] < 0 or x + direction[0] >= width or \
+            y + direction[1] < 0 or y + direction[1] >= length
+
+    def lazor_path(self):
+        '''
+        Calculates and tracks paths for all lasers in the grid.
+
+        **Returns**
+
+            list:
+                Laser paths with coordinates for each step, or 0 if targets are missed.
+        '''
+        # Initialize laser paths and completed targets
         laser_paths = []
         completed_paths = []
 
-        # Initialize each laser's starting path
         for laser in self.lazorlist:
             laser_paths.append([laser])
 
-        # Limit iterations to prevent infinite loops in cases of circular paths
         for step in range(30):
             for i in range(len(laser_paths)):
-                x, y = laser_paths[i][-1][0], laser_paths[i][-1][1]
-                dx, dy = laser_paths[i][-1][2], laser_paths[i][-1][3]
+                x, y, dx, dy = laser_paths[i][-1]
                 current_pos = [x, y]
                 direction = [dx, dy]
 
-                # Continue to next step if laser is outside grid boundary
+                # Skip if laser moves out of bounds
                 if self.check(current_pos, direction):
                     continue
 
-                # Determine the laser’s behavior upon encountering a block
+                # Calculate next step and interactions with blocks
                 next_step = self.meet_block(current_pos, direction)
 
-                # Case for B block: laser stops
+                # If block is of type B, laser stops here
                 if len(next_step) == 0:
                     laser_paths[i].append([x, y, 0, 0])
                     if current_pos in self.holelist and current_pos not in completed_paths:
                         completed_paths.append(current_pos)
 
-                # Case for A block or empty space: laser changes direction
+                # For type A blocks or empty cells, update direction
                 elif len(next_step) == 2:
                     direction = next_step
                     x += direction[0]
@@ -466,88 +404,90 @@ class Lazor(object):
                     if [x, y] in self.holelist and [x, y] not in completed_paths:
                         completed_paths.append([x, y])
 
-                # Case for C or D block: laser may split into two paths
+                # For type C, laser may split into two paths
                 elif len(next_step) == 4:
-                    if next_step[0] == 0 or next_step[0] == 2:
-                        direction = next_step
-                        x += direction[0]
-                        y += direction[1]
-                        laser_paths[i].append([x, y, direction[2], direction[3]])
-                        if [x, y] in self.holelist and [x, y] not in completed_paths:
-                            completed_paths.append([x, y])
-                    else:
-                        # Split laser into two paths at this position
-                        x1, y1 = x + next_step[0], y + next_step[1]
-                        x2, y2 = x, y
-                        laser_paths.append([[x1, y1, next_step[0], next_step[1]]])
-                        laser_paths[i].append([x2, y2, next_step[2], next_step[3]])
-                        if [x2, y2] in self.holelist and [x2, y2] not in completed_paths:
-                            completed_paths.append([x2, y2])
+                    x1, y1 = x + next_step[0], y + next_step[1]
+                    x2, y2 = x, y
+                    laser_paths.append([[x1, y1, next_step[0], next_step[1]]])
+                    laser_paths[i].append([x2, y2, next_step[2], next_step[3]])
+                    if [x2, y2] in self.holelist and [x2, y2] not in completed_paths:
+                        completed_paths.append([x2, y2])
                 else:
                     print('Unexpected block type encountered')
 
-        # Check if all target holes are reached
-        if len(completed_paths) == len(self.holelist):
-            return laser_paths
-        else:
-            return 0
+        # Return paths if all target holes are reached
+        return laser_paths if len(completed_paths) == len(self.holelist) else 0
 
 
 def find_path(grid, A_num, B_num, C_num, lazorlist, holelist, position):
     '''
-    Generate a possible grid with blocks filled in and solves it. If it is the correct grid, we return all the necessary parameters of the grid.
+    Generates possible grids with block placements and finds the solution.
 
-    Parameters remain the same.
+    **Parameters**
+
+        grid: *list*
+            Initial grid layout with empty cells marked.
+        A_num: *int*
+            Number of A blocks available.
+        B_num: *int*
+            Number of B blocks available.
+        C_num: *int*
+            Number of C blocks available.
+        lazorlist: *list*
+            Laser start positions and directions.
+        holelist: *list*
+            Target hole positions.
+        position: *list*
+            Positions of static blocks.
+
+    **Returns**
+
+        tuple:
+            Solution with laser paths, block arrangement, and updated grid.
     '''
+    # Collect all possible block configurations
     Blocks = []
-    # Extract the blank positions and replace them with blocks
     for a in grid:
         for b in a:
             if b == 'o':
                 Blocks.append(b)
     for i in range(A_num):
         Blocks[i] = 'A'
-    for i in range(A_num, (A_num + B_num)):
+    for i in range(A_num, A_num + B_num):
         Blocks[i] = 'B'
-    for i in range((A_num + B_num), (A_num + B_num + C_num)):
+    for i in range(A_num + B_num, A_num + B_num + C_num):
         Blocks[i] = 'C'
 
-    # Generate a list of permutations of blocks and blank position
+    # Generate block placements and test configurations
     list_Blocks = list(multiset_permutations(Blocks))
 
-    while len(list_Blocks) != 0:
+    while list_Blocks:
         list_temp = list_Blocks.pop()
         list_temp_save = copy.deepcopy(list_temp)
 
-        # Generate a board from grid function
         ori_grid = Grid(grid)
         test_board = ori_grid.gen_grid(list_temp, position)
 
-        # Test the board with Lazor to see if it is the correct board
         lazor = Lazor(test_board, lazorlist, holelist)
         solution = lazor.lazor_path()
 
-        # We return 0 if the board is incorrect and a list with the path of lasers if it's correct.
         if solution != 0:
             return solution, list_temp_save, test_board
-        else:
-            continue
 
 
 def locate_static_blocks(grid):
     '''
-    This function identifies static blocks in the initial board layout
-    to prevent overwriting them when generating new grids.
+    Identifies fixed (static) blocks in the grid.
 
     **Parameters**
 
         grid: *list*
-            The original grid layout from the .bff file.
+            Original grid layout from the .bff file.
 
-    **Return**
+    **Returns**
 
-        static_positions: *list*
-            A list of coordinates for blocks fixed by the game.
+        list:
+            Coordinates of fixed blocks as lists of [x, y].
     '''
     static_positions = []
     for i in range(len(grid)):
@@ -558,45 +498,33 @@ def locate_static_blocks(grid):
     return static_positions
 
 
-
 def solve_lazor_game(file_path):
     '''
-    This function extracts the necessary components from a .bff file,
-    computes the solution grid, and saves the result as a .bff file.
+    Extracts data from a .bff file, computes solution, and saves result.
 
     **Parameters**
 
         file_path: *str*
-            The filename of the .bff file to be processed.
+            Name of the .bff file.
 
-    **Return**
+    **Returns**
 
-        solution_grid: *list*
-            A list representing the solved grid configuration.
-        laser_paths: *list*
-            A list containing the paths of all lasers.
-        flattened_grid: *list*
-            The grid with all elements in a single list.
+        tuple:
+            Solved grid layout, paths of all lasers, and final grid layout.
     '''
-    # Parse the .bff file to retrieve grid setup and laser configurations
+    # Parse grid and laser setup
     parsed_data = read_bff(file_path)
-    main_grid = parsed_data[0]
-    num_a = parsed_data[1]
-    num_b = parsed_data[2]
-    num_c = parsed_data[3]
-    lasers = parsed_data[4]
-    targets = parsed_data[5]
-    base_grid = parsed_data[6]
+    main_grid, num_a, num_b, num_c, lasers, targets, base_grid = parsed_data
 
-    # Identify the fixed block locations
+    # Identify static block positions
     fixed_positions = locate_static_blocks(base_grid)
 
-    # Calculate the solution paths, laser tracks, and grid layout
+    # Find paths, grid layout, and laser configurations
     laser_paths, flattened_grid = find_path(
         main_grid, num_a, num_b, num_c, lasers, targets, fixed_positions
     )[:2]
 
-    # Copy the correct path configuration into the final grid layout
+    # Apply correct block placements to the grid
     temp_grid_list = copy.deepcopy(flattened_grid)
     solution_grid = copy.deepcopy(base_grid)
     for i in range(len(solution_grid)):
@@ -604,12 +532,11 @@ def solve_lazor_game(file_path):
             if solution_grid[i][j] == 'o':
                 solution_grid[i][j] = temp_grid_list.pop(0)
 
-    # Save the solution details back into a new .bff file
+    # Save solution back to a .bff file
     save_solution_bff(solved_board=solution_grid, answer_lazor=laser_paths,
                       lazors_info=lasers, holes=targets, filename=file_path)
 
     return solution_grid, laser_paths, flattened_grid
-
 
 
 if __name__ == "__main__":
