@@ -599,96 +599,91 @@ def find_path(grid, A_num, B_num, C_num, lazorlist, holelist, position):
                 continue
 
 
-def find_fixed_block(smallgrid):
+def locate_static_blocks(grid):
     '''
-    This function looks for blocks that were in the original board
-    so that we wouldn't replace it when generating grids
+    This function identifies static blocks in the initial board layout
+    to prevent overwriting them when generating new grids.
 
     **Parameters**
 
-        smallgrid: *list*
-            This is the orignial grid provided by the .bff file
+        grid: *list*
+            The original grid layout from the .bff file.
 
     **Return**
 
-        position: *list*
-            The coordination of the fixed blocks provided by the game
+        static_positions: *list*
+            A list of coordinates for blocks fixed by the game.
     '''
-    position = []
-    for i in range(len(smallgrid)):
-        for j in range(len(smallgrid[0])):
-            block = smallgrid[i][j]
-            if block == 'A' or block == 'B' or block == 'C':
-                position.append([i*2+1, j*2+1])
-    return position
+    static_positions = []
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            cell = grid[row][col]
+            if cell in ('A', 'B', 'C'):
+                static_positions.append([row * 2 + 1, col * 2 + 1])
+    return static_positions
 
 
-def solver(fptr):
+
+def solve_lazor_game(file_path):
     '''
-    This function provides all the necessary parameters of the correct grid
-    and generates a .bff file of the result
+    This function extracts the necessary components from a .bff file,
+    computes the solution grid, and saves the result as a .bff file.
 
     **Parameters**
 
-        fptr: *str*
-            This is the .bff file name you want to run.
+        file_path: *str*
+            The filename of the .bff file to be processed.
 
     **Return**
 
-        good_grid: *list*
-            A list representing the correct grid
-        answer: *list*
-            A list containing all laser paths
-        lazor: *list*
-            The correct grid but every element in one list
+        solution_grid: *list*
+            A list representing the solved grid configuration.
+        laser_paths: *list*
+            A list containing the paths of all lasers.
+        flattened_grid: *list*
+            The grid with all elements in a single list.
     '''
-    # Read the .bff file and extract the grid, block numbers, lasers, holes, etc.
-    read = read_bff(fptr)
-    grid = read[0]
-    a = read[1]
-    b = read[2]
-    c = read[3]
-    lazorlist = read[4]
-    holelist = read[5]
-    smallgrid = read[6]
+    # Parse the .bff file to retrieve grid setup and laser configurations
+    parsed_data = read_bff(file_path)
+    main_grid = parsed_data[0]
+    num_a = parsed_data[1]
+    num_b = parsed_data[2]
+    num_c = parsed_data[3]
+    lasers = parsed_data[4]
+    targets = parsed_data[5]
+    base_grid = parsed_data[6]
 
-    # Find the positions of fixed blocks
-    position = find_fixed_block(smallgrid)
+    # Identify the fixed block locations
+    fixed_positions = locate_static_blocks(base_grid)
 
-    # Find the solution grid, laser paths, and correct configuration
-    answer, lazor = find_path(grid, a, b, c, lazorlist, holelist, position)[:2]
+    # Calculate the solution paths, laser tracks, and grid layout
+    laser_paths, flattened_grid = find_path(
+        main_grid, num_a, num_b, num_c, lasers, targets, fixed_positions
+    )[:2]
 
-    # Generate the original board with the correct laser path
-    good_list = copy.deepcopy(lazor)
-    good_grid = copy.deepcopy(smallgrid)
-    for row in range(len(good_grid)):
-        for column in range(len(good_grid[0])):
-            if good_grid[row][column] == 'o':
-                good_grid[row][column] = good_list.pop(0)
+    # Copy the correct path configuration into the final grid layout
+    temp_grid_list = copy.deepcopy(flattened_grid)
+    solution_grid = copy.deepcopy(base_grid)
+    for i in range(len(solution_grid)):
+        for j in range(len(solution_grid[0])):
+            if solution_grid[i][j] == 'o':
+                solution_grid[i][j] = temp_grid_list.pop(0)
 
-    # Save the solution as a .bff file instead of an image
-    save_solution_bff(solved_board=good_grid, answer_lazor=answer,
-                      lazors_info=lazorlist, holes=holelist, filename=fptr)
+    # Save the solution details back into a new .bff file
+    save_solution_bff(solved_board=solution_grid, answer_lazor=laser_paths,
+                      lazors_info=lasers, holes=targets, filename=file_path)
 
-    # 打印解决方案的路径信息
-    print("Laser Path Solution:")
-    for path in answer:
-        print("Path:")
-        for step in path:
-            print(f"({step[0]}, {step[1]}) -> ", end="")
-        print("END\n")
-
-    return good_grid, answer, lazor
+    return solution_grid, laser_paths, flattened_grid
 
 
 if __name__ == "__main__":
     t0 = time.time()
-    solver('dark_1.bff')
-    solver('mad_1.bff')
-    solver('mad_4.bff')
-    #solver('numbered_6.bff')
-    #solver('showstopper_4.bff')
-    #solver('tiny_5.bff')
-    #solver('mad_7.bff')
+    solve_lazor_game('dark_1.bff')
+    solve_lazor_game('mad_1.bff')
+    solve_lazor_game('mad_4.bff')
+    solve_lazor_game('numbered_6.bff')
+    solve_lazor_game('showstopper_4.bff')
+    solve_lazor_game('tiny_5.bff')
+    solve_lazor_game('mad_7.bff')
     t1 = time.time()
     print(t1 - t0)
