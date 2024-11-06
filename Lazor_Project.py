@@ -1,4 +1,3 @@
-from PIL import Image, ImageDraw
 from sympy.utilities.iterables import multiset_permutations
 import copy
 import time
@@ -114,66 +113,9 @@ def read_bff(file_name):
             gridfull[i].insert(2 * j, 'x')
     for i in range(0, row + 1):
         gridfull.insert(2 * i, insert)
-    # Here are some troubleshooting for '.bff' files
-    # Unreasonable block number
-    if (A_num + B_num + C_num) == 0:
-        raise Exception('There are no available block ABC')
-    if (A_num + B_num + C_num) >= row * column:
-        raise Exception('There are more blocks than available spaces')
-    # No lasers
-    if len(L_list) == 0:
-        raise Exception('There are no lasors')
-    for i in range(len(L_list)):
-        # The format of the lasor is incorrect
-        if len(L_list[i]) != 4:
-            raise Exception('The format of the lasor is incorrect')
-    # The start points of lasers are unreasonable
-        if L_list[i][0] < 0 or L_list[i][0] > column * 2 or L_list[i][1] < 0 or L_list[i][1] > row * 2:
-            raise Exception('The start point of lasors are out of the grid')
-    # The directions of the lasors are unreasonable
-        if (L_list[i][2] != -1 and L_list[i][2] != 1) or (L_list[i][3] != -1 and L_list[i][3] != 1):
-            raise Exception('The directions of lasors are unreasonable')
-    for i in range(len(P_list)):
-        # The end points are unreasonable
-        if P_list[i][0] < 0 or P_list[i][0] > column * 2 or P_list[i][1] < 0 or P_list[i][1] > row * 2:
-            raise Exception('The end point of lasors are out of the grid')
-    # No end points
-    if len(P_list) == 0:
-        raise Exception('There are no end points')
 
-    # Any element other than 'ABCxo' in grid
-    for i in range(len(grid)):
-        for j in range(len(grid[i])):
-            if grid[i][j] not in ['x', 'o', 'A', 'B', 'C']:
-                raise Exception('There are undefined characters in the grid')
 
     return gridfull, A_num, B_num, C_num, L_list, P_list, grid_origin
-
-
-def get_colors():
-    '''
-    The idea of the code comes from the maze lab of the software carpentry class.
-    Colors map that the lazor board will use:
-        0 - BlackGray - The background
-        A - White - A reflect block
-        B - Black - A black block
-        C - transparent - A transparent block
-        o - Gray - A possible space for putting block
-        x - BlackGray - A place that could not have block
-
-    **Returns**
-
-        color_map: *dict, int, tuple*
-            A dictionary that will correlate the integer key to a color.
-    '''
-    return {
-        0: (20, 20, 20),
-        'A': (255, 255, 255),
-        'B': (0, 0, 0),
-        'C': (255, 0, 0),
-        'o': (100, 100, 100),
-        'x': (50, 50, 50),
-    }
 
 
 def save_solution_bff(solved_board, answer_lazor, lazors_info, holes, filename):
@@ -306,57 +248,19 @@ class Lazor(object):
         self.holelist = holelist
 
     def block(self, block_type):
-        '''
-        This function is to identify the function of different blocks
+      '''
+      This function is to identify the function of different blocks
+      '''
+      block_actions = {
+          'A': lambda: [-self.direction[0], self.direction[1]] if self.point[0] % 2 == 0 else [self.direction[0], -self.direction[1]],
+          'B': lambda: [],
+          'C': lambda: [self.direction[0], self.direction[1], -self.direction[0], self.direction[1]] if self.point[0] % 2 == 0 else [self.direction[0], self.direction[1], self.direction[0], -self.direction[1]],
+          'D': lambda: [2, 0, self.direction[0], self.direction[1]] if self.point[0] % 2 == 0 else [0, 2, self.direction[0], self.direction[1]],
+          'o': lambda: self.direction,
+          'x': lambda: self.direction
+     }
+      return block_actions.get(block_type, lambda: self.direction)()
 
-        **Parameters**
-
-            block_type: *str*
-                This represents different blocks
-                'A': Reflect block
-                'B': Opaque block
-                'C': Refract block
-                'D': Crstal block
-                'o': Blank space
-                'x': unavailable space
-
-        **Return**
-
-            new_direction: *list*
-                The new direction of lasors
-        '''
-        self.type = block_type
-        new_direction = []
-        # When lasors touch the reflect block
-        if self.type == 'A':
-            if self.point[0] & 1 == 0:
-                new_direction = [self.direction[0] * (-1), self.direction[1]]
-            else:
-                new_direction = [self.direction[0], self.direction[1] * (-1)]
-        # When lasors touch the opaque block
-        elif self.type == 'B':
-            new_direction = []
-        # When lasors touch the refract block
-        elif self.type == 'C':
-            if self.point[0] & 1 == 0:
-                new_direction = [self.direction[0], self.direction[1],
-                                 self.direction[0] * (-1), self.direction[1]]
-            else:
-                new_direction = [self.direction[0], self.direction[1],
-                                 self.direction[0], self.direction[1] * (-1)]
-        # When lasors touch the crystal block
-        elif self.type == 'D':
-            if self.point[0] & 1 == 0:
-                new_direction = [2, 0,
-                                 self.direction[0], self.direction[1]]
-            else:
-                new_direction = [0, 2,
-                                 self.direction[0], self.direction[1]]
-        # When lasors touch the blank space
-        elif self.type == 'o' or self.type == 'x' :
-            new_direction = self.direction
-
-        return new_direction
 
     def meet_block(self, point, direction):
         '''
@@ -504,70 +408,14 @@ class Lazor(object):
             return 0
 
 
-def obvs_judge(gridfull_temp, possible_list, list_temp, holelist):
-    '''
-    This function can skip some obveriously wrong solution
-
-    **Parameters**
-
-        gridfull_temp: *list*
-            The grid about to be solved
-
-        possible_list: *list
-            All possible permutations of 'ABCo'.
-
-        list_temp: *list*
-            The permutation currently being used.
-
-        holelist: *list*
-            The positions of the end points
-
-    **Return**
-
-        None
-    '''
-    for jj in range(len(holelist)):  # Ruling out grids that have blocks blocking a hole
-        x_hole = holelist[jj][1]
-        y_hole = holelist[jj][0]
-        if ((gridfull_temp[x_hole][y_hole + 1] in ['A', 'B']) and (gridfull_temp[x_hole][y_hole - 1] in ['A', 'B'])) or \
-                ((gridfull_temp[x_hole + 1][y_hole] in ['A', 'B']) and (gridfull_temp[x_hole - 1][y_hole] in ['A', 'B'])):
-            return False
-        else:
-            return True
-
-
 def find_path(grid, A_num, B_num, C_num, lazorlist, holelist, position):
     '''
-    Generate a possible grid with blocks filled in and solves it, if it is the right grid, we return all the necessary parameters of the grid
+    Generate a possible grid with blocks filled in and solves it. If it is the correct grid, we return all the necessary parameters of the grid.
 
-    **Parameters**
-
-        grid: *list*
-            The full grid in the form of a coordinate system
-        A_num: *int*
-            The number of A-block available
-        B_num: *int*
-            The number of B-block available
-        C_num: *int*
-            The number of C-block available
-        lazorlist: *list*
-            The first two elements is the positon of the start point, the last two elements are the direction.
-        holelist: *list*
-            The positions of the end points
-        position: *list*
-            A list store the pre-placed blocks
-
-    **Return**
-
-        solution: *list*
-            The positions and directions laser passed
-        list_temp_save: *list*
-            One possible permutation of blocks
-        test_board: *list*
-            The full grid in coordination
+    Parameters remain the same.
     '''
     Blocks = []
-    # Wxtract the blank positions and replace them with blocks
+    # Extract the blank positions and replace them with blocks
     for a in grid:
         for b in a:
             if b == 'o':
@@ -578,25 +426,27 @@ def find_path(grid, A_num, B_num, C_num, lazorlist, holelist, position):
         Blocks[i] = 'B'
     for i in range((A_num + B_num), (A_num + B_num + C_num)):
         Blocks[i] = 'C'
-    # Generate a list of permutations of blocks and blank postion
+
+    # Generate a list of permutations of blocks and blank position
     list_Blocks = list(multiset_permutations(Blocks))
 
     while len(list_Blocks) != 0:
-        list_temp = list_Blocks[-1]
+        list_temp = list_Blocks.pop()
         list_temp_save = copy.deepcopy(list_temp)
-        list_Blocks.pop()
+
         # Generate a board from grid function
         ori_grid = Grid(grid)
         test_board = ori_grid.gen_grid(list_temp, position)
-        # Test the board with obvs_judge and run it through Lazor to see if it is the right board
-        if obvs_judge(test_board, list_Blocks, list_temp, holelist):
-            lazor = Lazor(test_board, lazorlist, holelist)
-            solution = lazor.lazor_path()
-            # We retunr 0 if the board is wrong and return a list with the path of lazors if its right.
-            if solution != 0:
-                return solution, list_temp_save, test_board
-            else:
-                continue
+
+        # Test the board with Lazor to see if it is the correct board
+        lazor = Lazor(test_board, lazorlist, holelist)
+        solution = lazor.lazor_path()
+
+        # We return 0 if the board is incorrect and a list with the path of lasers if it's correct.
+        if solution != 0:
+            return solution, list_temp_save, test_board
+        else:
+            continue
 
 
 def locate_static_blocks(grid):
@@ -676,14 +526,16 @@ def solve_lazor_game(file_path):
     return solution_grid, laser_paths, flattened_grid
 
 
+
 if __name__ == "__main__":
     t0 = time.time()
     solve_lazor_game('dark_1.bff')
     solve_lazor_game('mad_1.bff')
     solve_lazor_game('mad_4.bff')
+    solve_lazor_game('mad_7.bff')
     solve_lazor_game('numbered_6.bff')
     solve_lazor_game('showstopper_4.bff')
     solve_lazor_game('tiny_5.bff')
-    solve_lazor_game('mad_7.bff')
+    solve_lazor_game('yarn_5.bff')
     t1 = time.time()
     print(t1 - t0)
