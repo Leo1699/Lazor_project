@@ -326,7 +326,7 @@ class Lazor(object):
 
     def lazor_path(self):
         '''
-        This function can return a list of the lasors path
+        This function calculates and returns the paths of all lasers.
 
         **Parameters**
 
@@ -334,76 +334,69 @@ class Lazor(object):
 
         **Return**
 
-            lazorlist: *list*
-                A list contains lasors path
+            laser_paths: *list*
+                A list containing the paths of all lasers.
         '''
-        result = []
-        lazorlist = []
-        # Get the lasers' list from input and store them into lazorlist
-        for p in range(len(self.lazorlist)):
-            lazorlist.append([self.lazorlist[p]])
-        # IMPORTANT!!!
-        # 'n' here is to avoid infinite loop of laser in a circle
-        # The range can be bigger, but the bigger it is, the slower the script runs
-        # It cannot be too small because of the limitations of some levels
-        for n in range(30):
-            # The original lazor is added to the lazor list
-            for k in range(len(lazorlist)):
-                coordination_x = lazorlist[k][-1][0]
-                coordination_y = lazorlist[k][-1][1]
-                direction_x = lazorlist[k][-1][2]
-                direction_y = lazorlist[k][-1][3]
-                coordination = [coordination_x, coordination_y]
-                direction = [direction_x, direction_y]
-                # Checking if the lazor and its next step is inside the boundary
-                if self.check(coordination, direction):
+        laser_paths = []
+        completed_paths = []
+
+        # Initialize each laser's starting path
+        for laser in self.lazorlist:
+            laser_paths.append([laser])
+
+        # Limit iterations to prevent infinite loops in cases of circular paths
+        for step in range(30):
+            for i in range(len(laser_paths)):
+                x, y = laser_paths[i][-1][0], laser_paths[i][-1][1]
+                dx, dy = laser_paths[i][-1][2], laser_paths[i][-1][3]
+                current_pos = [x, y]
+                direction = [dx, dy]
+
+                # Continue to next step if laser is outside grid boundary
+                if self.check(current_pos, direction):
                     continue
-                else:
-                    # Receiving the coordination & direction of lazor after a step
-                    next_step = self.meet_block(coordination, direction)
-                    # If there are no elements in the list, it indicates it is block B
-                    if len(next_step) == 0:
-                        lazorlist[k].append([
-                            coordination[0], coordination[1], 0, 0])
-                        if (coordination in self.holelist) and (coordination not in result):
-                            result.append(coordination)
-                    # If there are 2 elements, it is "o" or A block
-                    elif len(next_step) == 2:
+
+                # Determine the laser’s behavior upon encountering a block
+                next_step = self.meet_block(current_pos, direction)
+
+                # Case for B block: laser stops
+                if len(next_step) == 0:
+                    laser_paths[i].append([x, y, 0, 0])
+                    if current_pos in self.holelist and current_pos not in completed_paths:
+                        completed_paths.append(current_pos)
+
+                # Case for A block or empty space: laser changes direction
+                elif len(next_step) == 2:
+                    direction = next_step
+                    x += direction[0]
+                    y += direction[1]
+                    laser_paths[i].append([x, y, direction[0], direction[1]])
+                    if [x, y] in self.holelist and [x, y] not in completed_paths:
+                        completed_paths.append([x, y])
+
+                # Case for C or D block: laser may split into two paths
+                elif len(next_step) == 4:
+                    if next_step[0] == 0 or next_step[0] == 2:
                         direction = next_step
-                        coordination = [
-                            coordination[0] + direction[0], coordination[1] + direction[1]]
-                        lazorlist[k].append(
-                            [coordination[0], coordination[1], direction[0], direction[1]])
-                        if (coordination in self.holelist) and (coordination not in result):
-                            result.append(coordination)
-                    # If there are 4 elements, it is C block or D block, we seperate them and add the straight line to a new list in lazor list,
-                    # and the other to the list under the original lazor
-                    elif len(next_step) == 4:
-                        if next_step[0] == 0 or next_step[0] == 2:
-                            direction = next_step
-                            coordination = [
-                            coordination[0] + direction[0], coordination[1] + direction[1]]
-                            lazorlist[k].append(
-                                [coordination[0], coordination[1], direction[2], direction[3]])
-                            if (coordination in self.holelist) and (coordination not in result):
-                                result.append(coordination)
-                        else:
-                            direction = next_step
-                            coordination_newlaz1 = [
-                                coordination[0] + direction[0], coordination[1] + direction[1]]
-                            coordination_newlaz2 = [
-                                coordination[0], coordination[1]]
-                            lazorlist.append(
-                                [[coordination_newlaz1[0], coordination_newlaz1[1], direction[0], direction[1]]])
-                            lazorlist[k].append(
-                                [coordination_newlaz2[0], coordination_newlaz2[1], direction[2], direction[3]])
-                            coordination = coordination_newlaz2
-                            if (coordination in self.holelist) and (coordination not in result):
-                                result.append(coordination)
+                        x += direction[0]
+                        y += direction[1]
+                        laser_paths[i].append([x, y, direction[2], direction[3]])
+                        if [x, y] in self.holelist and [x, y] not in completed_paths:
+                            completed_paths.append([x, y])
                     else:
-                        print('Wrong')
-        if len(result) == len(self.holelist):
-            return lazorlist
+                        # Split laser into two paths at this position
+                        x1, y1 = x + next_step[0], y + next_step[1]
+                        x2, y2 = x, y
+                        laser_paths.append([[x1, y1, next_step[0], next_step[1]]])
+                        laser_paths[i].append([x2, y2, next_step[2], next_step[3]])
+                        if [x2, y2] in self.holelist and [x2, y2] not in completed_paths:
+                            completed_paths.append([x2, y2])
+                else:
+                    print('Unexpected block type encountered')
+
+        # Check if all target holes are reached
+        if len(completed_paths) == len(self.holelist):
+            return laser_paths
         else:
             return 0
 
