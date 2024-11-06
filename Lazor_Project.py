@@ -178,7 +178,7 @@ def get_colors():
 
 def save_solution_bff(solved_board, answer_lazor, lazors_info, holes, filename):
     '''
-    This function saves the solution as a .bff file with clear laser path branching.
+    This function saves the solution as a .bff file with all paths output correctly.
 
     **Parameters**
 
@@ -223,50 +223,27 @@ def save_solution_bff(solved_board, answer_lazor, lazors_info, holes, filename):
             f.write(f"P {hole[0]} {hole[1]}\n")
         f.write("P HOLES_END\n\n")
 
-        # Write laser path solution with branching details
+        # Write each laser path
         f.write("LASER PATH\n")
         for path in answer_lazor:
-            main_path_points = set()  # Track points on the main path
-            f.write("Main Path:\n  ")
+            # Avoid writing paths with repeated coordinates
+            unique_path = []
+            for point in path:
+                if not unique_path or unique_path[-1] != point[:2]:
+                    unique_path.append(point[:2])
 
-            split_detected = False  # Track whether a split was detected
-
-            for i, point in enumerate(path):
-                point_tuple = tuple(point[:2])  # Convert list to tuple for hashability, using only coordinates
-
-                if point_tuple in main_path_points and i > 0 and not split_detected:
-                    # Detect split point and branch
-                    f.write(f"\n  Split at {point[:2]}:\n")
-                    split_detected = True
-
-                    # Write the reflection path
-                    f.write("    Reflection Path: ")
-                    for j in range(i, len(path)):
-                        if j < len(path) - 1:
-                            f.write(f"({path[j][0]}, {path[j][1]}) -> ")
-                        else:
-                            f.write(f"({path[j][0]}, {path[j][1]})\n")
-
-                    # Write the transmission path
-                    f.write("    Transmission Path: ")
-                    continue  # Skip to transmission path section
-                elif split_detected:
-                    # Continue with transmission path after split
-                    if i < len(path) - 1:
-                        f.write(f"({point[0]}, {point[1]}) -> ")
-                    else:
-                        f.write(f"({point[0]}, {point[1]})\n")
+            # Format the path output as requested
+            f.write("Path:\n  ")
+            for i, point in enumerate(unique_path):
+                if i < len(unique_path) - 1:
+                    f.write(f"({point[0]}, {point[1]}) -> ")
                 else:
-                    # Continue main path
-                    if i < len(path) - 1:
-                        f.write(f"({point[0]}, {point[1]}) -> ")
-                    else:
-                        f.write(f"({point[0]}, {point[1]})\n")
-                    main_path_points.add(point_tuple)
+                    f.write(f"({point[0]}, {point[1]}) -> END\n")
             f.write("\n")
         f.write("LASER PATH END\n")
 
     print(f'Solution successfully saved in {solution_filename}')
+
 
 
 class Grid(object):
@@ -692,6 +669,14 @@ def solver(fptr):
     # Save the solution as a .bff file instead of an image
     save_solution_bff(solved_board=good_grid, answer_lazor=answer,
                       lazors_info=lazorlist, holes=holelist, filename=fptr)
+
+    # 打印解决方案的路径信息
+    print("Laser Path Solution:")
+    for path in answer:
+        print("Path:")
+        for step in path:
+            print(f"({step[0]}, {step[1]}) -> ", end="")
+        print("END\n")
 
     return good_grid, answer, lazor
 
