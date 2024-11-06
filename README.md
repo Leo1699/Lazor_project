@@ -60,9 +60,10 @@ B 3
 L 3 6 -1 -1
 
 P 2 3
+```
 
-
-The result will display like (showstopper_4_solved.bff)  
+The result will display like (showstopper_4_solved.bff)
+```plaintext 
 GRID START
 B A B
 B o A
@@ -82,4 +83,4 @@ Path:
   (3, 6) -> (2, 5) -> (3, 4) -> (4, 3) -> (3, 2) -> (2, 3) -> END
 
 LASER PATH END
-
+```
