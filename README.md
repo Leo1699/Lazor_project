@@ -46,6 +46,7 @@ Congqi Lin: clin145@jh.edu
 5. **Save Solution**: The solved grid layout and laser paths are saved to a `.bff` file.
 ## Example Usage:  
 The Input .bff docs like (showstopper_4.bff)  
+```plaintext
 
 GRID START
 B o o
