@@ -3,18 +3,86 @@ import copy
 import time
 
 class A_Block:
+    '''
+    This class defines the behavior of an A-type block,
+    which reflects the laser in a new direction upon interaction.
+
+    **Methods**
+
+        interact(direction, point):
+            Returns the reflected direction of the laser based on the
+            position of the block and the incoming laser direction.
+
+    **Parameters**
+
+        direction: *list*
+            A list representing the laser's current direction.
+        point: *list*
+            The current position of the laser.
+
+    **Returns**
+
+        list:
+            A new direction after reflection based on the block's position.
+    '''
     @staticmethod
     def interact(direction, point):
         # Reflect based on direction and position
         return [-direction[0], direction[1]] if point[0] % 2 == 0 else [direction[0], -direction[1]]
 
+
 class B_Block:
+    '''
+    This class defines the behavior of a B-type block,
+    which absorbs the laser, effectively ending its path.
+
+    **Methods**
+
+        interact(direction, point):
+            Returns an empty list to indicate the laser is absorbed.
+
+    **Parameters**
+
+        direction: *list*
+            A list representing the laser's current direction.
+        point: *list*
+            The current position of the laser.
+
+    **Returns**
+
+        list:
+            An empty list to indicate the laser is absorbed.
+    '''
     @staticmethod
     def interact(direction, point):
         # Absorb the laser
         return []
 
+
 class C_Block:
+    '''
+    This class defines the behavior of a C-type block,
+    which splits the laser into two paths upon interaction.
+
+    **Methods**
+
+        interact(direction, point):
+            Returns two new directions for the laser, effectively
+            splitting it based on the block's position and incoming direction.
+
+    **Parameters**
+
+        direction: *list*
+            A list representing the laser's current direction.
+        point: *list*
+            The current position of the laser.
+
+    **Returns**
+
+        list:
+            A list containing two sets of directions, representing
+            the split paths of the laser.
+    '''
     @staticmethod
     def interact(direction, point):
         # Split the laser into two directions
