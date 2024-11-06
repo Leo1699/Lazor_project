@@ -56,8 +56,8 @@ def read_bff(file_name):
             A_temp = []
             B_temp = []
             C_temp = []
-            L_temp = []
-            P_temp = []
+            # L_temp = []
+            # P_temp = []
             # Get the number of available A-block
             if content[i][j] == 'A' and (str.isalpha(content[i][j + 1]) is False):
                 for k in range(len(content[i])):
@@ -465,11 +465,11 @@ def locate_static_blocks(grid):
             A list of coordinates for blocks fixed by the game.
     '''
     static_positions = []
-    for row in range(len(grid)):
-        for col in range(len(grid[0])):
-            cell = grid[row][col]
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            cell = grid[i][j]
             if cell in ('A', 'B', 'C'):
-                static_positions.append([row * 2 + 1, col * 2 + 1])
+                static_positions.append([i * 2 + 1, j * 2 + 1])
     return static_positions
 
 
