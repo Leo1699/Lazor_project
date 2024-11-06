@@ -2,6 +2,28 @@ from sympy.utilities.iterables import multiset_permutations
 import copy
 import time
 
+class A_Block:
+    @staticmethod
+    def interact(direction, point):
+        # Reflect based on direction and position
+        return [-direction[0], direction[1]] if point[0] % 2 == 0 else [direction[0], -direction[1]]
+
+class B_Block:
+    @staticmethod
+    def interact(direction, point):
+        # Absorb the laser
+        return []
+
+class C_Block:
+    @staticmethod
+    def interact(direction, point):
+        # Split the laser into two directions
+        if point[0] % 2 == 0:
+            return [direction[0], direction[1], -direction[0], direction[1]]
+        else:
+            return [direction[0], direction[1], direction[0], -direction[1]]
+
+
 
 def read_bff(file_name):
     '''
@@ -230,14 +252,14 @@ class Grid(object):
 
 class Lazor(object):
     '''
-    This Function class is a wrapper for identifying right grid and return a lazor path
+    This Function class is a wrapper for identifying right grid and return a laser path
 
     **Parameters**
 
         grid : *list*
             A list of list stand for a possible grid of the solution
         lazorlist : *list*
-            A list of list stand for start point and direction of lazor
+            A list of list stand for start point and direction of laser
         holelist : *list*
             A list of list stand for the position of the end point or the hole
     '''
@@ -247,52 +269,53 @@ class Lazor(object):
         self.lazorlist = lazorlist
         self.holelist = holelist
 
-    def block(self, block_type):
-      '''
-      This function is to identify the function of different blocks
-      '''
-      block_actions = {
-          'A': lambda: [-self.direction[0], self.direction[1]] if self.point[0] % 2 == 0 else [self.direction[0], -self.direction[1]],
-          'B': lambda: [],
-          'C': lambda: [self.direction[0], self.direction[1], -self.direction[0], self.direction[1]] if self.point[0] % 2 == 0 else [self.direction[0], self.direction[1], self.direction[0], -self.direction[1]],
-          'D': lambda: [2, 0, self.direction[0], self.direction[1]] if self.point[0] % 2 == 0 else [0, 2, self.direction[0], self.direction[1]],
-          'o': lambda: self.direction,
-          'x': lambda: self.direction
-     }
-      return block_actions.get(block_type, lambda: self.direction)()
+    def block(self, block_type, direction, point):
+        '''
+        This function identifies the function of different blocks
+        and interacts with the laser based on block type.
+        '''
+        block_classes = {
+            'A': A_Block,
+            'B': B_Block,
+            'C': C_Block
+        }
+        block_class = block_classes.get(block_type)
+        if block_class:
+            return block_class.interact(direction, point)
+        return direction
 
 
     def meet_block(self, point, direction):
         '''
-        This function will check whether the lasor encounter a functional block
-        and returns the new direction of the lasor
+        This function checks whether the laser encounters a functional block
+        and returns the new direction of the laser.
 
         **Parameters**
 
             point: *list*
-                The current lazor position
+                The current laser position
             direction: *list*
-                The current direction of lazor
+                The current direction of laser
 
         **Return**
 
             new_direction: *list*
-                A list that includes new directions of lazor after meeting functional block
+                A list that includes new directions of laser after meeting functional block
         '''
-        self.point = point
-        self.direction = direction
         # Calculate the next position of the laser
         x1, y1 = point[0], point[1] + direction[1]
         x2, y2 = point[0] + direction[0], point[1]
-        # Obtain the block laser touches
+
+        # Obtain the block type the laser touches
         if point[0] & 1 == 1:
             block_type = self.grid[y1][x1]
-            new_direction = self.block(block_type)
-        if point[0] & 1 == 0:
+        else:
             block_type = self.grid[y2][x2]
-            new_direction = self.block(block_type)
 
-        return new_direction
+        # Call the block method to handle interaction with the block
+        return self.block(block_type, direction, point)
+
+
 
     def check(self, laz_co, direction):
         '''
@@ -323,6 +346,7 @@ class Lazor(object):
             return True
         else:
             return False
+
 
     def lazor_path(self):
         '''
