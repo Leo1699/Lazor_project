@@ -1,4 +1,4 @@
-# Lazor Project for EN.540.635
+# Lazor Project
 
 ## This is LazorProject for Group QQalways_Win
 The Lazor Project is a Python-based program that automatically solves the "Lazors" game. This project simulates the game's grid, tracks laser paths, and strategically places blocks to meet game objectives. The solution is generated through algorithmic computations and saved as a .bff file.
@@ -6,6 +6,13 @@ The Lazor Project is a Python-based program that automatically solves the "Lazor
 ## Team Member:
 Haoran Liu: hliu169@jh.edu  
 Congqi Lin: clin145@jh.edu  
+
+## Prerequisites
+
+Ensure you have Python installed. This program uses the following libraries:
+- `sympy`
+- `copy`
+- `time`
 
 ## How It Works
 
@@ -22,8 +29,8 @@ Congqi Lin: clin145@jh.edu
 
 - **Lazor**: Manages laser movements and interactions with blocks on the grid, including:
   - **block**: Determines the block type at a position and updates the laser's path accordingly.
-  - **meet_block**: Checks for block encounters and calculates the new laser direction.
-  - **check**: Verifies if the laser path is still within grid boundaries.
+  - **interact_block**: Checks for block encounters and calculates the new laser direction.
+  - **within_bounds**: Verifies if the laser path is still within grid boundaries.
   - **lazor_path**: Tracks each laser's path, ensuring that it reaches all target points.
 
 ### Key Functions
