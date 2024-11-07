@@ -2,6 +2,7 @@ from sympy.utilities.iterables import multiset_permutations
 import copy
 import time
 
+
 class A_Block:
     '''
     A-type block that reflects the laser upon interaction.
@@ -25,14 +26,15 @@ class A_Block:
     '''
     @staticmethod
     def interact(direction, point):
-      # Reflects based on position: horizontal or vertical flip
-      dx, dy = direction
-      x, _ = point
+        # Reflects based on position: horizontal or vertical flip
+        dx, dy = direction
+        x, _ = point
 
-      if x % 2 == 0:
-        return [-dx, dy]
-      else:
-        return [dx, -dy]
+        if x % 2 == 0:
+            return [-dx, dy]
+        else:
+            return [dx, -dy]
+
 
 class B_Block:
     '''
@@ -84,14 +86,15 @@ class C_Block:
     '''
     @staticmethod
     def interact(direction, point):
-      # Split laser: generates two paths based on position
-      dx, dy = direction
-      x, _ = point
+        # Split laser: generates two paths based on position
+        dx, dy = direction
+        x, _ = point
 
-      if x % 2 == 0:
-        return [dx, dy, -dx, dy]
-      else:
-        return [dx, dy, dx, -dy]
+        if x % 2 == 0:
+            return [dx, dy, -dx, dy]
+        else:
+            return [dx, dy, dx, -dy]
+
 
 def read_bff(file_name):
     '''
@@ -107,7 +110,8 @@ def read_bff(file_name):
         tuple:
             Parsed data including grid layout, block counts, laser info, targets, and original grid.
     '''
-    # Initialize counts and lists for blocks, lasers, targets, and grid structure
+    # Initialize counts and lists for blocks, lasers, targets, and grid
+    # structure
     A_num = B_num = C_num = 0
     L_list = []
     P_list = []
@@ -134,7 +138,8 @@ def read_bff(file_name):
             # Collect laser start points and directions
             elif line.startswith('L '):
                 parts = line.split()
-                L_list.append([int(parts[1]), int(parts[2]), int(parts[3]), int(parts[4])])
+                L_list.append([int(parts[1]), int(parts[2]),
+                              int(parts[3]), int(parts[4])])
 
             # Collect target points for lasers
             elif line.startswith('P '):
@@ -166,7 +171,12 @@ def read_bff(file_name):
     return grid_full, A_num, B_num, C_num, L_list, P_list, grid_origin
 
 
-def save_solution_bff(solved_board, answer_lazor, lazors_info, holes, filename):
+def save_solution_bff(
+        solved_board,
+        answer_lazor,
+        lazors_info,
+        holes,
+        filename):
     '''
     Saves the solution to a .bff file with all laser paths.
 
@@ -244,6 +254,7 @@ class Grid:
         self.length = len(origrid)
         self.width = len(origrid[0])
         self.static_positions = self.locate_static_blocks()
+
     def locate_static_blocks(self):
         '''
         This function identifies static blocks in the initial board layout
@@ -254,8 +265,12 @@ class Grid:
             static_positions: *list*
                 A list of coordinates for blocks fixed by the game.
         '''
-        static_positions = [[i * 2 + 1, j * 2 + 1] for i, row in enumerate(self.origrid) for j, block in enumerate(row) if block in "ABC"]
+        static_positions = [[i * 2 + 1,
+                             j * 2 + 1] for i,
+                            row in enumerate(self.origrid) for j,
+                            block in enumerate(row) if block in "ABC"]
         return static_positions
+
     def gen_grid(self, block_list, fixed_positions):
         '''
         Populates the grid with specified blocks, skipping over fixed/static positions.
@@ -393,13 +408,15 @@ class Lazor:
                 A list of paths where each path contains coordinates of each laser step.
                 Returns 0 if any target is missed.
         '''
-        laser_paths = [[laser] for laser in self.lazorlist]  # Initialize paths with each laser's start
+        laser_paths = [
+            [laser] for laser in self.lazorlist]  # Initialize paths with each laser's start
         targets_reached = []
 
         max_steps = 50
         for step in range(max_steps):
             for i, path in enumerate(laser_paths):
-                x, y, dx, dy = path[-1]  # Last recorded position and direction for this laser
+                # Last recorded position and direction for this laser
+                x, y, dx, dy = path[-1]
                 current_pos = [x, y]
                 direction = [dx, dy]
 
@@ -420,7 +437,8 @@ class Lazor:
                     x += dx
                     y += dy
                     path.append([x, y, dx, dy])
-                    if [x, y] in self.holelist and [x, y] not in targets_reached:
+                    if [x, y] in self.holelist and [
+                            x, y] not in targets_reached:
                         targets_reached.append([x, y])
 
                 elif len(new_direction) == 4:  # Block C: laser splits into two paths
@@ -440,7 +458,6 @@ class Lazor:
 
         # Return paths if all targets are reached; otherwise, return 0
         return laser_paths if len(targets_reached) == len(self.holelist) else 0
-
 
 
 def find_path(grid, A_num, B_num, C_num, lazorlist, holelist, position):
@@ -514,13 +531,21 @@ def solve_lazor_game(file_path):
             The solved grid layout, laser paths, and final grid with block placements.
     '''
     # Parse the game configuration from the .bff file
-    main_grid, num_a, num_b, num_c, lasers, targets, base_grid = read_bff(file_path)
+    main_grid, num_a, num_b, num_c, lasers, targets, base_grid = read_bff(
+        file_path)
 
     # Locate static block positions that shouldn't be changed
     static_positions = Grid(base_grid).locate_static_blocks()
 
     # Find the solution by attempting various block placements
-    solution = find_path(main_grid, num_a, num_b, num_c, lasers, targets, static_positions)
+    solution = find_path(
+        main_grid,
+        num_a,
+        num_b,
+        num_c,
+        lasers,
+        targets,
+        static_positions)
 
     # Handle case where no solution is found
     if solution is None:
@@ -549,7 +574,6 @@ def solve_lazor_game(file_path):
     )
 
     return solution_grid, laser_paths, final_grid_layout
-
 
 
 if __name__ == "__main__":
