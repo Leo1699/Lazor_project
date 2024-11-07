@@ -1,4 +1,4 @@
-# Lazor Project for EN.540.635
+# Lazor Project
 
 ## This is LazorProject for Group QQalways_Win
 The Lazor Project is a Python-based program that automatically solves the "Lazors" game. This project simulates the game's grid, tracks laser paths, and strategically places blocks to meet game objectives. The solution is generated through algorithmic computations and saved as a .bff file.
