@@ -7,6 +7,13 @@ The Lazor Project is a Python-based program that automatically solves the "Lazor
 Haoran Liu: hliu169@jh.edu  
 Congqi Lin: clin145@jh.edu  
 
+## Prerequisites
+
+Ensure you have Python installed. This program uses the following libraries:
+- `sympy`
+- `copy`
+- `time`
+
 ## How It Works
 
 ### Key Classes
@@ -22,8 +29,8 @@ Congqi Lin: clin145@jh.edu
 
 - **Lazor**: Manages laser movements and interactions with blocks on the grid, including:
   - **block**: Determines the block type at a position and updates the laser's path accordingly.
-  - **meet_block**: Checks for block encounters and calculates the new laser direction.
-  - **check**: Verifies if the laser path is still within grid boundaries.
+  - **interact_block**: Checks for block encounters and calculates the new laser direction.
+  - **within_bounds**: Verifies if the laser path is still within grid boundaries.
   - **lazor_path**: Tracks each laser's path, ensuring that it reaches all target points.
 
 ### Key Functions
